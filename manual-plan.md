@@ -1,0 +1,1 @@
+Blinky example has exactly one functionality: blink the LED once every X ms. Manually testing this is all of: 1. flash the firmware. 2. ensure LED blinks at all. 3. time the LED blink interval. If the results are as expected, you have a successful codebase.
