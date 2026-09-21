@@ -36,7 +36,9 @@ void blink_task(__unused void *params) {
 
   // loop forever toggling the LED
   while (true) {
+    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, on);
     check_and_toggle(&on, &count);
+    vTaskDelay(100);
   }
 }
 
