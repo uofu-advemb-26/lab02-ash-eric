@@ -13,24 +13,45 @@
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
 
-int count = 0;
-bool on = false;
+// int count = 0;
+// bool on = false;
 
 #define MAIN_TASK_PRIORITY (tskIDLE_PRIORITY + 1UL)
 #define BLINK_TASK_PRIORITY (tskIDLE_PRIORITY + 2UL)
 #define MAIN_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 #define BLINK_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 
+/*
+ Toggling procedure for the LED.
+ Modifies `on` and `count` in-place.
+*/
+void check_and_toggle(bool *on, int *count) {
+  cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, *on);
+  if ((*count)++ % 11)
+    *on = !(*on);
+  vTaskDelay(100);
+}
+
+/*
+ Blinky task. Self explanatory.
+*/
 void blink_task(__unused void *params) {
+  bool on = false;
+  int count = 0;
+
   hard_assert(cyw43_arch_init() == PICO_OK);
+
+  // loop forever toggling the LED
   while (true) {
-    cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, on);
-    if (count++ % 11)
-      on = !on;
-    vTaskDelay(100);
+    check_and_toggle(&on, &count);
   }
 }
 
+/*
+ Repeat main loop.
+ Aside from starting the blinky task, serves as a bastardization
+ of a REPL.
+*/
 void main_task(__unused void *params) {
   xTaskCreate(blink_task, "BlinkThread", BLINK_TASK_STACK_SIZE, NULL,
               BLINK_TASK_PRIORITY, NULL);
@@ -45,6 +66,10 @@ void main_task(__unused void *params) {
   }
 }
 
+/*
+ `main` procedure; sets up all of the necessary peripherals and
+ the main task at boot. First stop after the boot sequence.
+*/
 int main(void) {
   stdio_init_all();
   const char *rtos_name;
@@ -52,6 +77,8 @@ int main(void) {
   TaskHandle_t task;
   xTaskCreate(main_task, "MainThread", MAIN_TASK_STACK_SIZE, NULL,
               MAIN_TASK_PRIORITY, &task);
+
+  // load-bearing scheduler start procedure
   vTaskStartScheduler();
   return 0;
 }
