@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: BSD-3-Clause
  */
 
+#include <stdbool.h>
 #include <stdio.h>
 
 #include "FreeRTOS.h"
@@ -12,6 +13,8 @@
 #include "pico/cyw43_arch.h"
 #include "pico/multicore.h"
 #include "pico/stdlib.h"
+
+#include "blinky.h"
 
 // int count = 0;
 // bool on = false;
@@ -22,22 +25,12 @@
 #define BLINK_TASK_STACK_SIZE configMINIMAL_STACK_SIZE
 
 /*
- Toggling procedure for the LED.
- Modifies `on` and `count` in-place.
-*/
-void check_and_toggle(bool *on, int *count) {
-  cyw43_arch_gpio_put(CYW43_WL_GPIO_LED_PIN, *on);
-  if ((*count)++ % 11)
-    *on = !(*on);
-  vTaskDelay(100);
-}
-
-/*
  Blinky task. Self explanatory.
 */
 void blink_task(__unused void *params) {
   bool on = false;
-  int count = 0;
+  // unsigned to avoid undefined behavior
+  unsigned int count = 0;
 
   hard_assert(cyw43_arch_init() == PICO_OK);
 
