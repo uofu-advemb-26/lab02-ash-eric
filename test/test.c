@@ -27,6 +27,21 @@ void test_check_and_toggle(void) {
   }
 }
 
+void test_char_conversion(void) {
+  for (char c = 0; c <= 'A'; c++) {
+    char res = char_conversion(c);
+    if (c <= 'z' && c >= 'a')
+      TEST_ASSERT_EQUAL_MESSAGE(c - 32, res,
+                                "If 'a' <= c <= 'z', res should be c - 32");
+    else if (c >= 'A' && c <= 'Z')
+      TEST_ASSERT_EQUAL_MESSAGE(c + 32, res,
+                                "If 'A' <= c <= 'Z', res should be c + 32");
+    else
+      TEST_ASSERT_EQUAL_MESSAGE(
+          c, res, "If c is outside of alphabetic range, res should be c");
+  }
+}
+
 int main(void) {
   stdio_init_all();
   while (1) {
@@ -34,6 +49,7 @@ int main(void) {
     printf("Start tests\n");
     UNITY_BEGIN();
     RUN_TEST(test_check_and_toggle);
+    RUN_TEST(test_char_conversion);
     sleep_ms(5000);
     UNITY_END();
   }
